@@ -1,18 +1,30 @@
 import React from 'react';
 import { StyleSheet, Text, View, StatusBar, TextInput, Dimensions, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { AppLoading } from 'expo';
 import ToDo from "./Todo";
+import uuidv1 from "uuid/v1";
 
 const { hight, width } = Dimensions.get("window");
 
 export default class App extends React.Component {
 
   state = {
-    newToDo: ""
+    newToDo: "",
+    loadedToDo: false,
+  }
+  //componentDidMount() {}
+  componentDidMount = () => {
+    this._loadToDos();
   }
 
   render() {
-    const { newToDo } = this.state;
+    const { newToDo, loadedToDo } = this.state;
+
+    if (!loadedToDo) {
+      return <AppLoading />
+    }
+
     return (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
@@ -27,9 +39,10 @@ export default class App extends React.Component {
             onChangeText={this._controlNewTodo}
             returnKeyType={"done"}
             autoCorrect={false}
+            onSubmitEditing={this._addTodo}
           />
           <ScrollView contentContainerStyle={styles.toDos}>
-            <ToDo />
+            <ToDo text123={"Hello I'm a To Do"} />
           </ScrollView>
         </View>
       </View>
@@ -52,7 +65,44 @@ export default class App extends React.Component {
       return { newToDo: text }
     });
     //this.setState(() => ({ newToDo: text }));
-  }
+  };
+
+  _loadToDos = () => {
+    this.setState({ loadedToDo: true })
+  };
+  _addTodo = () => {
+    const { newToDo } = this.state;
+
+    if (newToDo !== "") {
+
+      this.setState(prevState => {
+        const ID = uuidv1();
+        const newToDoOject = { //객체 오브젝트
+          [ID]: {
+            id: ID,
+            isCompleted: false,
+            text: newToDo,
+            createAt: Date.now()
+          },
+          
+        }; //end object
+
+        //I don't know...
+        const newState = {
+          ...prevState,
+          newToDo: "",
+          toDos: {
+            ...prevState.toDos,
+            ...newToDoOject
+          }
+        };
+
+        return {...newState}
+      }) //end setstate
+
+
+    }
+  };
 }
 
 const styles = StyleSheet.create({
